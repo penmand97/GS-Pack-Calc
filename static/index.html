@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Title -->
+    <title>Gymshark Pack Consolidation Calculator</title>
+    
+    <!-- Link to the external CSS file for styling -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Link to Google Fonts to include the Bebas Neue font -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Responsive logo image -->
+        <img src="DP Gymshark Package Calculator.png" alt="Logo" class="logo">
+        <h1>Gymshark Pack Consolidation Calculator 📦</h1> <!-- Page heading -->
+        
+        <!-- Form for user to input pack sizes -->
+        <form id="packSizeForm"> 
+            <!-- Input field for pack sizes, expects comma-separated values -->
+            <input type="text" id="packSizes" placeholder="Enter pack sizes (comma separated)" required>
+            <!-- Button to submit the pack sizes -->
+            <button type="submit">Submit Pack Sizes</button>
+        </form>
+        
+        <!-- Div to display the pack size options -->
+        <div class="options" id="options"></div>
+        
+        <!-- Form for user to input number of items -->
+        <form id="packForm" style="display: none;"> 
+            <!-- Input field for the number of items, expects a number -->
+            <input type="number" id="items" placeholder="Enter number of items" required>
+            <!-- Button to submit the form -->
+            <button type="submit">Consolidate Packs</button>
+        </form>
+        
+        <!-- Div to display the result of the pack consolidation -->
+        <div class="result" id="result"></div>
+    </div>
+
+    <!-- JavaScript to handle form submission and display the result -->
+    <script>
+        // Add an event listener for pack size form submission
+        document.getElementById('packSizeForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            
+            // Get the pack sizes from the input, split by comma, and convert to numbers
+            const packSizes = document.getElementById('packSizes').value.split(',').map(Number);
+            
+            // Display the pack size options
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = '<h2>Pack Size Options</h2>';
+            packSizes.forEach(size => {
+                optionsDiv.innerHTML += `<p>${size}</p>`;
+            });
+
+            // Show the pack form to enter the number of items
+            document.getElementById('packForm').style.display = 'block';
+        });
+
+        // Add an event listener for the main form submission
+        document.getElementById('packForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            
+            // Get the pack sizes from the input, split by comma, and convert to numbers
+            const packSizes = document.getElementById('packSizes').value.split(',').map(Number);
+            // Get the number of items from the input and convert to a number
+            const items = parseInt(document.getElementById('items').value);
+
+            // Send a POST request to the server with the pack sizes and items
+            fetch('http://localhost:8081/consolidate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json', // Set the request content type to JSON
+                },
+                // Convert the data to a JSON string for the request body
+                body: JSON.stringify({ packSizes, items }),
+            })
+            .then(response => response.json()) // Parse the JSON response from the server
+            .then(data => {
+                // Get the result div to display the response
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = '<h2>Consolidated Packs</h2>'; // Add a heading to the result div
+                // Loop through the response data and display each pack size and count
+                for (const [key, value] of Object.entries(data)) {
+                    if (value > 0) { // Only display entries with a value greater than 0
+                        resultDiv.innerHTML += `<p>${key}: ${value}</p>`;
+                    }
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error); // Log any errors to the console
+            });
+        });
+    </script>
+</body>
+</html>
